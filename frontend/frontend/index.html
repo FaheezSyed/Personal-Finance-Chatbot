@@ -1,13 +1,28 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Finance Chatbot frontend — lightweight React app built with Vite." />
+    <meta name="theme-color" content="#0ea5a4" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="/vite.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Enable Tailwind via CDN for local/dev usage and set dark mode to 'class' -->
+    <script>tailwind = window.tailwind || {}; tailwind.config = Object.assign(tailwind.config || {}, { darkMode: 'class' });</script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <title>Finance Chatbot</title>
   </head>
   <body>
-    <div id="root"></div>
+    <noscript>
+      This application requires JavaScript. Please enable JavaScript in your browser.
+    </noscript>
+
+    <div id="root" role="application" aria-label="Finance Chatbot application"></div>
+
     <script type="module" src="/src/index.jsx"></script>
   </body>
 </html>

@@ -28,7 +28,10 @@ export default function ChatApp() {
 
   // ---- Chat state ----
   const [started, setStarted] = useState(true); // skip welcome for now; set to false to show splash
-  const [msgs, setMsgs] = useState([]); // {role: "user"|"assistant", content: string}
+  const [msgs, setMsgs] = useState([
+    { role: "assistant", content: "Hi — I'm Finance Copilot. Ask about budgets, expenses, or trends. Try: \"Show my top merchants this month\"." },
+    { role: "user", content: "Show my top merchants this month" },
+  ]); // {role: "user"|"assistant", content: string}
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
@@ -65,7 +68,9 @@ export default function ChatApp() {
         i += 1;
         setMsgs((m) => {
           const copy = [...m];
+            
           const current = copy[idx] || { role: "assistant", content: "" };
+          
           copy[idx] = { role: "assistant", content: fullText.slice(0, i) };
           return copy;
         });
@@ -131,66 +136,90 @@ export default function ChatApp() {
 
   // ---- Main chat UI ----
   return (
-    <div className="h-screen w-full flex items-center justify-center bg-gray-100 dark:bg-slate-900">
-      <div className="w-full max-w-3xl bg-white dark:bg-slate-950 dark:text-slate-100 shadow-2xl rounded-2xl flex flex-col h-[94vh] overflow-hidden">
-        {/* Header */}
-        <div className="p-4 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between">
-          <div className="text-lg font-semibold">Finance Copilot</div>
-          <div className="text-xs opacity-60">
-            {isDark ? "Auto: Dark" : "Auto: Light"}
-          </div>
-        </div>
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
+      <div className="relative max-w-4xl mx-auto h-screen flex flex-col">
+        {/* App shell — fullscreen card with subtle backdrop */}
+        <div className="absolute inset-0 pointer-events-none bg-black/6 dark:bg-black/20" aria-hidden="true" />
 
-        {/* Messages */}
-        <div
-          ref={scrollRef}
-          className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50 dark:bg-slate-900/60"
-        >
-          {msgs.map((m, i) => (
-            <MessageBubble key={i} role={m.role} text={m.content} />
-          ))}
-          {loading && <TypingIndicator />}
-          <div ref={bottomRef} />
-        </div>
+        <div className="relative z-10 flex-1 flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl shadow-xl m-4 overflow-hidden">
+          {/* Header (sticky) */}
+          <header className="sticky top-0 z-20 backdrop-blur-sm bg-white/60 dark:bg-slate-900/60 border-b border-gray-200 dark:border-slate-800 px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-md bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm sm:text-base">
+                FC
+              </div>
+              <div className="min-w-0">
+                <div className="text-sm sm:text-lg font-semibold leading-tight truncate">Finance Copilot</div>
+                <div className="text-xs sm:text-sm opacity-60 truncate">Smart insights for your spending</div>
+              </div>
+            </div>
+            <div className="text-xs opacity-60">
+              {isDark ? "Auto: Dark" : "Auto: Light"}
+            </div>
+          </header>
 
-        {/* Composer */}
-        <div className="p-4 border-t border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950">
-          <div className="flex items-end gap-2">
-            <textarea
-              className="flex-1 px-4 py-3 border border-gray-300 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-900 resize-none"
-              rows={2}
-              placeholder="Type your question…  (Enter = send, Shift+Enter = new line)"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={onKeyDown}
-            />
-            <button
-              onClick={sendMessage}
-              disabled={loading || !input.trim()}
-              className={`px-4 py-3 rounded-xl text-white transition ${
-                loading || !input.trim()
-                  ? "bg-blue-300 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700"
-              }`}
-            >
-              Send
-            </button>
-          </div>
-        </div>
-
-        {/* Scroll to bottom button */}
-        {showScrollBtn && (
-          <button
-            onClick={() =>
-              bottomRef.current?.scrollIntoView({ behavior: "smooth" })
-            }
-            className="absolute right-6 bottom-24 px-3 py-2 rounded-full bg-black/70 text-white text-xs shadow hover:bg-black"
-            aria-label="Scroll to latest"
-            title="Scroll to latest"
+          {/* Messages (main, scrollable) */}
+          <main
+            ref={scrollRef}
+            role="log"
+            aria-live="polite"
+            className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-gradient-to-b from-transparent to-white/50 dark:from-transparent dark:to-slate-900/60"
           >
-            ↓ New
-          </button>
-        )}
+            <div className="max-w-xl sm:max-w-3xl mx-auto w-full space-y-3">
+              {msgs.map((m, i) => (
+                <MessageBubble key={i} role={m.role} text={m.content} />
+              ))}
+              {loading && <TypingIndicator />}
+              <div ref={bottomRef} />
+            </div>
+          </main>
+
+          {/* Composer (sticky bottom) */}
+          <div
+            className="sticky bottom-0 z-20 border-t border-gray-200 dark:border-slate-800 bg-white/70 dark:bg-slate-950/80 backdrop-blur-sm p-3 sm:p-4"
+            style={{ paddingBottom: "env(safe-area-inset-bottom, 12px)" }}
+          >
+            <div className="max-w-xl sm:max-w-3xl mx-auto w-full flex flex-col sm:flex-row items-end gap-3">
+              <textarea
+                className="flex-1 px-4 py-3 border border-gray-300 dark:border-slate-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-900 resize-none min-h-[44px] max-h-36 w-full"
+                rows={1}
+                placeholder="Ask about budgets, expenses, or trends… (Enter = send, Shift+Enter = newline)"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={onKeyDown}
+                aria-label="Message"
+              />
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <button
+                  onClick={sendMessage}
+                  disabled={loading || !input.trim()}
+                  className={`px-4 py-3 rounded-2xl text-white transition shadow-sm w-full sm:w-auto ${
+                    loading || !input.trim()
+                      ? "bg-blue-300 cursor-not-allowed"
+                      : "bg-blue-600 hover:bg-blue-700"
+                  }`}
+                  aria-label="Send message"
+                >
+                  {loading ? "Sending…" : "Send"}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Scroll to bottom button */}
+          {showScrollBtn && (
+            <button
+              onClick={() =>
+                bottomRef.current?.scrollIntoView({ behavior: "smooth" })
+              }
+              className="fixed right-4 sm:right-6 bottom-20 sm:bottom-28 z-30 px-3 py-2 rounded-full bg-black/75 text-white text-xs shadow-lg hover:bg-black/90"
+              aria-label="Scroll to latest"
+              title="Scroll to latest"
+            >
+              ↓ New
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -211,7 +240,7 @@ function MessageBubble({ role, text }) {
       style={{ opacity: mounted ? 1 : 0, transition: "opacity 160ms ease-in" }}
     >
       <div
-        className={`px-4 py-2 rounded-2xl max-w-[80%] whitespace-pre-wrap leading-relaxed ${
+        className={`px-4 py-2 rounded-2xl max-w-[80%] sm:max-w-[60%] whitespace-pre-wrap leading-relaxed break-words ${
           role === "user"
             ? "bg-blue-600 text-white"
             : "bg-white dark:bg-slate-800 dark:text-slate-100 text-gray-800 border border-gray-200 dark:border-slate-700"
@@ -233,7 +262,7 @@ function TypingIndicator() {
   }, []);
   return (
     <div className="flex justify-start">
-      <div className="px-4 py-2 rounded-2xl max-w-[80%] bg-white dark:bg-slate-800 dark:text-slate-100 text-gray-500 border border-gray-200 dark:border-slate-700">
+      <div className="px-4 py-2 rounded-2xl max-w-[80%] sm:max-w-[60%] bg-white dark:bg-slate-800 dark:text-slate-100 text-gray-500 border border-gray-200 dark:border-slate-700">
         Thinking{dots}
       </div>
     </div>

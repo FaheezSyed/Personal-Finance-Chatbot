@@ -11,7 +11,8 @@ from langchain_community.agent_toolkits import create_sql_agent
 def build_agent():
     try:
         load_dotenv()
-        api_key = os.getenv("GOOGLE_API_KEY")
+        api_key = os.getenv("GEMINI_API_KEY")
+        #print(api_key)
         if not api_key:
             raise EnvironmentError("GOOGLE_API_KEY not found in .env")
         llm = ChatGoogleGenerativeAI(
